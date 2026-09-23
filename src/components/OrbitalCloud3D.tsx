@@ -162,7 +162,7 @@ function ElectronCloud({ n, l, m, count, colors, autoRotate }: OrbitalCloud3DPro
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
           <bufferAttribute attach="attributes-color" args={[colorArray, 3]} />
         </bufferGeometry>
-        <pointsMaterial size={autoRotate ? 0.055 : 0.065} vertexColors transparent opacity={autoRotate ? 0.48 : 0.7} depthWrite={false} blending={THREE.AdditiveBlending} sizeAttenuation />
+        <pointsMaterial size={autoRotate ? 0.05 : 0.06} vertexColors transparent opacity={autoRotate ? 0.62 : 0.78} depthWrite={false} blending={THREE.NormalBlending} sizeAttenuation />
       </points>
       <mesh>
         <sphereGeometry args={[0.075, 24, 24]} />
