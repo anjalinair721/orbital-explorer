@@ -179,7 +179,7 @@ function OrbitalExplorer() {
             </ClientOnly>
             <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm">+z</span>
             <span className="pointer-events-none absolute bottom-4 left-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground"><i className="size-2 rounded-full bg-[var(--orbital-cloud)] shadow-[0_0_10px_var(--orbital-cloud)]" /> probability amplitude</span>
-            <span className="pointer-events-none absolute bottom-4 right-4 font-mono text-[10px] uppercase text-muted-foreground">Auto rotate · drag to inspect</span>
+            <span className="pointer-events-none absolute bottom-10 left-4 font-mono text-[10px] uppercase text-muted-foreground sm:bottom-4 sm:left-auto sm:right-4">Auto rotate · drag to inspect</span>
           </div>
         </section>
 

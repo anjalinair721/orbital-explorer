@@ -26,9 +26,36 @@ const FALLBACK_COLORS: SceneColors = {
   surface: "#dff3fb",
 };
 
+function oklchToHex(value: string, fallback: string) {
+  const match = value.match(/oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/i);
+  if (!match) return value || fallback;
+  const lightnessValue = Number(match[1]);
+  const chroma = Number(match[2]);
+  const hue = Number(match[3]) * Math.PI / 180;
+  const lightness = lightnessValue > 1 ? lightnessValue / 100 : lightnessValue;
+  const a = chroma * Math.cos(hue);
+  const b = chroma * Math.sin(hue);
+  const lPrime = lightness + 0.3963377774 * a + 0.2158037573 * b;
+  const mPrime = lightness - 0.1055613458 * a - 0.0638541728 * b;
+  const sPrime = lightness - 0.0894841775 * a - 1.291485548 * b;
+  const l = lPrime ** 3;
+  const m = mPrime ** 3;
+  const s = sPrime ** 3;
+  const linear = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ];
+  const encoded = linear.map((channel) => {
+    const value = channel <= 0.0031308 ? 12.92 * channel : 1.055 * channel ** (1 / 2.4) - 0.055;
+    return Math.round(Math.max(0, Math.min(1, value)) * 255).toString(16).padStart(2, "0");
+  });
+  return `#${encoded.join("")}`;
+}
+
 function readSceneColors(): SceneColors {
   const styles = getComputedStyle(document.documentElement);
-  const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
+  const read = (name: string, fallback: string) => oklchToHex(styles.getPropertyValue(name).trim(), fallback);
   return {
     cloud: read("--orbital-cloud", FALLBACK_COLORS.cloud),
     cloudAlt: read("--orbital-cloud-alt", FALLBACK_COLORS.cloudAlt),
