@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Atom, ChevronDown, FlaskConical, Orbit, RotateCcw, Sparkles } from "lucide-react";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense, useMemo, useState } from "react";
+import { Atom, ChevronDown, FlaskConical, MousePointer2, Orbit, Rotate3D, RotateCcw, Sparkles } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -20,6 +20,8 @@ import {
   shapeName,
   subshellDescription,
 } from "@/lib/orbitals";
+
+const OrbitalCloud3D = lazy(() => import("@/components/OrbitalCloud3D").then((module) => ({ default: module.OrbitalCloud3D })));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,26 +49,6 @@ function StepHeading({ symbol, step, label, formula }: { symbol: string; step: s
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{step} / {label}</p>
         <p className="mt-1 font-mono text-sm text-primary">{formula}</p>
       </div>
-    </div>
-  );
-}
-
-function OrbitalShape({ l, m }: { l: number; m: number }) {
-  if (l === 0) {
-    return <div className="orbital-sphere" aria-label="Spherical s orbital"><span /></div>;
-  }
-  if (l === 1) {
-    const rotation = m === -1 ? "rotate-90" : m === 1 ? "rotate-45" : "";
-    return (
-      <div className={`orbital-dumbbell ${rotation}`} aria-label="Dumbbell p orbital">
-        <span className="lobe lobe-a" /><i className="nucleus" /><span className="lobe lobe-b" />
-      </div>
-    );
-  }
-  return (
-    <div className={`orbital-clover orbital-l-${Math.min(l, 4)}`} aria-label={`${shapeName(l)} orbital`}>
-      {range(0, Math.min(2 * l + 1, 8) - 1).map((value) => <span key={value} style={{ transform: `rotate(${(360 / Math.min(2 * l + 1, 8)) * value}deg) translateY(-48px)` }} />)}
-      <i className="nucleus" />
     </div>
   );
 }
@@ -169,8 +151,13 @@ function OrbitalExplorer() {
         <section className="mt-12 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="panel-shadow rounded-[1.75rem] border border-border bg-card p-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Visual reference · {name}</p><h2 className="mt-4 font-serif text-5xl">Shape of {name}</h2>
-            <div className="mt-6 flex min-h-64 items-center justify-center rounded-2xl bg-secondary/70"><OrbitalShape l={l} m={m} /></div>
-            <p className="mt-5 font-mono text-xs text-muted-foreground">{shapeName(l)} shape · orientation m = {m > 0 ? `+${m}` : m}</p>
+            <div className="relative mt-6 h-80 overflow-hidden rounded-2xl border border-border bg-secondary/70" aria-label={`Rotatable 3D shape of ${name}`}>
+              <ClientOnly fallback={<div className="h-full animate-pulse bg-secondary" />}>
+                <Suspense fallback={<div className="h-full animate-pulse bg-secondary" />}><OrbitalCloud3D n={n} l={l} m={m} /></Suspense>
+              </ClientOnly>
+              <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm"><MousePointer2 size={13} /> drag to rotate · scroll to zoom</span>
+            </div>
+            <p className="mt-5 font-mono text-xs text-muted-foreground">{shapeName(l)} cloud · orientation m = {m > 0 ? `+${m}` : m}</p>
           </div>
 
           <div className="panel-shadow min-w-0 rounded-[1.75rem] border border-border bg-card p-7">
@@ -178,6 +165,21 @@ function OrbitalExplorer() {
             <div className="mt-7 h-80 w-full" aria-label={`Radial distribution chart for ${name}`}>
               <ResponsiveContainer width="100%" height="100%"><LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 5" /><XAxis dataKey="r" type="number" tickFormatter={(v) => Number(v).toFixed(0)} stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} label={{ value: "distance r (a₀)", position: "insideBottomRight", offset: -2 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><Tooltip formatter={(value) => [Number(value).toPrecision(4), "RDF"]} labelFormatter={(value) => `r = ${Number(value).toFixed(2)} a₀`} contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} /><Line type="monotone" dataKey="rdf" name={`${name} orbital`} stroke="var(--primary)" strokeWidth={3} dot={false} activeDot={{ r: 4, fill: "var(--accent)" }} /></LineChart></ResponsiveContainer>
             </div>
+          </div>
+        </section>
+
+        <section className="panel-shadow mt-8 rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Angular density / |Yℓᵐ|²</p><h2 className="mt-3 font-serif text-5xl">Probability surface</h2><p className="mt-2 max-w-2xl text-muted-foreground">A cloud of possible electron positions around the nucleus for {name}, with denser regions showing greater probability.</p></div>
+            <Rotate3D className="text-accent" />
+          </div>
+          <div className="relative mt-7 h-[28rem] overflow-hidden rounded-2xl border border-border bg-secondary/70 sm:h-[34rem]" aria-label={`Electron probability surface for ${name}`}>
+            <ClientOnly fallback={<div className="h-full animate-pulse bg-secondary" />}>
+              <Suspense fallback={<div className="h-full animate-pulse bg-secondary" />}><OrbitalCloud3D n={n} l={l} m={m} mode="probability" /></Suspense>
+            </ClientOnly>
+            <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm">+z</span>
+            <span className="pointer-events-none absolute bottom-4 left-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground"><i className="size-2 rounded-full bg-[var(--orbital-cloud)] shadow-[0_0_10px_var(--orbital-cloud)]" /> probability amplitude</span>
+            <span className="pointer-events-none absolute bottom-10 left-4 font-mono text-[10px] uppercase text-muted-foreground sm:bottom-4 sm:left-auto sm:right-4">Auto rotate · drag to inspect</span>
           </div>
         </section>
 
