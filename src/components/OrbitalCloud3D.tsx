@@ -89,9 +89,10 @@ function buildCloud(n: number, l: number, m: number, count: number) {
   const radialNodes = n - l - 1;
 
   for (let index = 0; index < count; index += 1) {
-    const direction = directions.length === 0
+    const selectedDirection = directions[Math.floor(random() * directions.length)];
+    const direction = directions.length === 0 || !selectedDirection
       ? randomUnit(random)
-      : directions[Math.floor(random() * directions.length)].clone();
+      : selectedDirection.clone();
     const radiusBand = radialNodes > 0 && random() < Math.min(0.36, radialNodes * 0.11) ? 0.48 : 1;
     const radius = radiusBand * (0.55 + Math.pow(random(), 0.62) * (1.25 + n * 0.07));
     const spread = l === 0 ? 0.3 : 0.16 + Math.min(l, 4) * 0.018;
@@ -113,7 +114,7 @@ function ElectronCloud({ n, l, m, count, colors, autoRotate }: OrbitalCloud3DPro
     const alternate = new THREE.Color(colors.cloudAlt);
     const values = new Float32Array(count * 3);
     for (let index = 0; index < count; index += 1) {
-      const color = phases[index] > 0.5 ? primary : alternate;
+      const color = (phases[index] ?? 0) > 0.5 ? primary : alternate;
       values[index * 3] = color.r;
       values[index * 3 + 1] = color.g;
       values[index * 3 + 2] = color.b;
@@ -161,7 +162,7 @@ function OrbitalScene({ n, l, m, mode, colors, reduceMotion }: OrbitalCloud3DPro
       <ambientLight intensity={1.2} />
       <directionalLight position={[3, 4, 5]} intensity={1.4} />
       <Axes colors={colors} />
-      <ElectronCloud n={n} l={l} m={m} mode={mode} count={probability ? 4200 : 2600} colors={colors} autoRotate={probability && !reduceMotion} />
+      <ElectronCloud n={n} l={l} m={m} count={probability ? 4200 : 2600} colors={colors} autoRotate={probability && !reduceMotion} />
       <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.07} minDistance={3.25} maxDistance={7.5} rotateSpeed={0.7} zoomSpeed={0.65} autoRotate={false} />
     </>
   );
