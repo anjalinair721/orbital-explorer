@@ -19,6 +19,9 @@
  */
 
 @theme inline {
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "Instrument Serif", serif;
+  --font-mono: "DM Mono", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,26 +65,30 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --radius: 1.25rem;
+  --background: oklch(0.94 0.035 225);
+  --foreground: oklch(0.25 0.06 270);
+  --card: oklch(0.975 0.014 231);
+  --card-foreground: oklch(0.25 0.06 270);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --primary: oklch(0.56 0.12 225);
+  --primary-foreground: oklch(0.99 0.005 230);
+  --secondary: oklch(0.92 0.035 225);
+  --secondary-foreground: oklch(0.25 0.06 270);
+  --muted: oklch(0.93 0.025 228);
+  --muted-foreground: oklch(0.48 0.05 265);
+  --accent: oklch(0.67 0.22 315);
+  --accent-foreground: oklch(0.99 0.005 230);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.79 0.055 225);
+  --input: oklch(0.79 0.055 225);
+  --ring: oklch(0.56 0.12 225);
+  --navy: oklch(0.27 0.07 270);
+  --navy-muted: oklch(0.72 0.05 260);
+  --grid-line: oklch(0.79 0.04 225 / 38%);
+  --panel-shadow: 0 18px 45px oklch(0.42 0.07 235 / 10%);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,5 +147,77 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    margin: 0;
   }
 }
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-navy-muted: var(--navy-muted);
+}
+
+@utility scientific-grid {
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@utility panel-shadow {
+  box-shadow: var(--panel-shadow);
+}
+
+.orbital-sphere {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 36% 30%, color-mix(in oklab, var(--accent) 45%, transparent), color-mix(in oklab, var(--primary) 55%, transparent) 52%, transparent 70%);
+  box-shadow: 0 0 45px color-mix(in oklab, var(--primary) 26%, transparent);
+}
+.orbital-sphere span,
+.nucleus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--foreground);
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--card) 55%, transparent);
+}
+.orbital-dumbbell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: transform 500ms ease;
+}
+.orbital-dumbbell.rotate-90 { transform: rotate(90deg); }
+.orbital-dumbbell.rotate-45 { transform: rotate(45deg); }
+.orbital-dumbbell .lobe {
+  display: block;
+  width: 92px;
+  height: 126px;
+  border-radius: 75% 24% 75% 24%;
+  background: linear-gradient(145deg, color-mix(in oklab, var(--primary) 88%, var(--card)), color-mix(in oklab, var(--primary) 30%, transparent));
+  box-shadow: 0 15px 35px color-mix(in oklab, var(--primary) 24%, transparent);
+}
+.orbital-dumbbell .lobe-a { transform: rotate(45deg) translateX(8px); }
+.orbital-dumbbell .lobe-b { transform: rotate(225deg) translateX(8px); background: linear-gradient(145deg, color-mix(in oklab, var(--accent) 80%, var(--card)), color-mix(in oklab, var(--accent) 25%, transparent)); }
+.orbital-dumbbell .nucleus { z-index: 2; }
+.orbital-clover { position: relative; width: 220px; height: 220px; animation: orbital-float 8s ease-in-out infinite; }
+.orbital-clover span {
+  position: absolute;
+  left: calc(50% - 29px);
+  top: calc(50% - 50px);
+  width: 58px;
+  height: 100px;
+  transform-origin: 29px 98px;
+  border-radius: 70% 70% 28% 28%;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 75%, var(--card)), color-mix(in oklab, var(--primary) 44%, transparent));
+  opacity: 0.78;
+}
+.orbital-clover .nucleus { z-index: 3; }
+@keyframes orbital-float { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg) scale(1.025); } }
+@media (prefers-reduced-motion: reduce) { .orbital-clover { animation: none; } }
