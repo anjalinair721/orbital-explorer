@@ -133,6 +133,79 @@ function buildCloud(n: number, l: number, m: number, count: number) {
   return { positions, phases };
 }
 
+
+function angularValue(direction: THREE.Vector3, l: number, m: number) {
+  const x = direction.x, y = direction.y, z = direction.z;
+  if (l === 0) return { value: 1, phase: 1 };
+  if (l === 1) {
+    if (m === 0) return { value: z, phase: z >= 0 ? 1 : -1 };
+    if (m < 0) return { value: y, phase: y >= 0 ? 1 : -1 };
+    return { value: x, phase: x >= 0 ? 1 : -1 };
+  }
+  if (l === 2) {
+    if (m === 0) return { value: 0.5 * (3 * z * z - 1), phase: z * z >= 1 / 3 ? 1 : -1 };
+    if (Math.abs(m) === 1) return { value: z * (m < 0 ? y : x), phase: z * (m < 0 ? y : x) >= 0 ? 1 : -1 };
+    return { value: x * y, phase: x * y >= 0 ? 1 : -1 };
+  }
+  // Smooth higher-order fallback that preserves nodal planes and sign changes.
+  const azimuth = Math.atan2(y, x);
+  const polar = Math.acos(Math.max(-1, Math.min(1, z)));
+  const value = Math.pow(Math.sin(polar), l) * Math.cos((Math.abs(m) + 1) * azimuth) * (m === 0 ? Math.cos(polar) : 1);
+  return { value, phase: value >= 0 ? 1 : -1 };
+}
+
+function SolidOrbitalSurface({ n, l, m, colors }: OrbitalCloud3DProps & { colors: SceneColors }) {
+  const geometry = useMemo(() => {
+    const thetaSteps = 56;
+    const phiSteps = 112;
+    const positions: number[] = [];
+    const colorValues: number[] = [];
+    const indices: number[] = [];
+    const positive = new THREE.Color(colors.cloud);
+    const negative = new THREE.Color(colors.cloudAlt);
+    const radialScale = 0.72 + n * 0.08;
+
+    for (let i = 0; i <= thetaSteps; i += 1) {
+      const theta = (i / thetaSteps) * Math.PI;
+      for (let j = 0; j <= phiSteps; j += 1) {
+        const phi = (j / phiSteps) * Math.PI * 2;
+        const direction = new THREE.Vector3(Math.sin(theta) * Math.cos(phi), Math.sin(theta) * Math.sin(phi), Math.cos(theta));
+        const { value, phase } = angularValue(direction, l, m);
+        const amplitude = Math.abs(value);
+        const radius = radialScale * (0.055 + 1.05 * Math.pow(amplitude, l === 0 ? 0.05 : 0.34));
+        const vertex = direction.multiplyScalar(radius);
+        positions.push(vertex.x, vertex.y, vertex.z);
+        const color = phase > 0 ? positive : negative;
+        colorValues.push(color.r, color.g, color.b);
+      }
+    }
+
+    const row = phiSteps + 1;
+    for (let i = 0; i < thetaSteps; i += 1) {
+      for (let j = 0; j < phiSteps; j += 1) {
+        const a = i * row + j;
+        const b = a + 1;
+        const c = a + row;
+        const d = c + 1;
+        indices.push(a, c, b, b, c, d);
+      }
+    }
+
+    const result = new THREE.BufferGeometry();
+    result.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    result.setAttribute('color', new THREE.Float32BufferAttribute(colorValues, 3));
+    result.setIndex(indices);
+    result.computeVertexNormals();
+    return result;
+  }, [n, l, m, colors]);
+
+  return (
+    <mesh geometry={geometry}>
+      <meshStandardMaterial vertexColors transparent opacity={0.88} roughness={0.24} metalness={0.04} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
 function ElectronCloud({ n, l, m, count, colors, autoRotate }: OrbitalCloud3DProps & { count: number; colors: SceneColors; autoRotate: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const { positions, phases } = useMemo(() => buildCloud(n, l, m, count), [n, l, m, count]);
@@ -189,7 +262,8 @@ function OrbitalScene({ n, l, m, mode, colors, reduceMotion }: OrbitalCloud3DPro
       <ambientLight intensity={1.2} />
       <directionalLight position={[3, 4, 5]} intensity={1.4} />
       <Axes colors={colors} />
-      <ElectronCloud n={n} l={l} m={m} count={probability ? 4200 : 2600} colors={colors} autoRotate={probability && !reduceMotion} />
+      {!probability && <SolidOrbitalSurface n={n} l={l} m={m} colors={colors} />}
+      <ElectronCloud n={n} l={l} m={m} count={probability ? 4200 : 1400} colors={colors} autoRotate={probability && !reduceMotion} />
       <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.07} minDistance={3.25} maxDistance={7.5} rotateSpeed={0.7} zoomSpeed={0.65} autoRotate={false} />
     </>
   );

@@ -63,6 +63,7 @@ function OrbitalExplorer() {
   const name = orbitalName(n, l);
   const compareName = orbitalName(compareN, compareL);
   const chartData = useMemo(() => radialDistribution(n, l), [n, l]);
+  const wavefunctionData = useMemo(() => radialDistribution(n, l), [n, l]);
   const compareData = useMemo(() => {
     const sharedMax = 2.5 * Math.max(averageRadius(n, l), averageRadius(compareN, compareL));
     const primary = radialDistribution(n, l, 420, sharedMax);
@@ -183,12 +184,29 @@ function OrbitalExplorer() {
           </div>
         </section>
 
+        <section className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="panel-shadow rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
+            <div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Radial analysis</p><h2 className="mt-3 font-serif text-5xl">Wavefunction vs distance</h2><p className="mt-2 text-muted-foreground">The signed radial wavefunction R(r) shows where the amplitude changes phase; zero crossings correspond to radial nodes.</p></div>
+            <div className="mt-6 h-80 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={wavefunctionData} margin={{ top: 15, right: 15, left: -15, bottom: 10 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 5" /><XAxis dataKey="r" type="number" name="distance" stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} formatter={(value: number) => [Number(value).toFixed(4), "R(r)"]} /><Line type="monotone" dataKey="radial" name="R(r)" stroke="var(--primary)" strokeWidth={3} dot={false} /></LineChart></ResponsiveContainer></div>
+          </div>
+
+          <div className="panel-shadow rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Node map</p><h2 className="mt-3 font-serif text-5xl">Nodes of {name}</h2><p className="mt-2 text-muted-foreground">Three quantities describe where the wavefunction is zero.</p>
+            <div className="mt-7 space-y-4">
+              {[['Total nodes', n - 1, 'n − 1'], ['Angular nodes', l, 'ℓ'], ['Radial nodes', n - l - 1, 'n − ℓ − 1']].map(([label, value, formula]) => (
+                <div key={label as string} className="rounded-2xl border border-border bg-secondary/60 p-4">
+                  <div className="flex items-end justify-between gap-3"><div><p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 font-mono text-xs text-muted-foreground">{formula}</p></div><strong className="font-serif text-4xl text-accent">{value}</strong></div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-background"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Number(value) * 20 + 8)}%` }} /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="panel-shadow mt-8 rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Comparison lab</p><h2 className="mt-3 font-serif text-5xl">Compare two orbitals</h2></div><div className="flex gap-3"><label className="font-mono text-xs text-muted-foreground">shell<select value={compareN} onChange={(event) => { const value = Number(event.target.value); setCompareN(value); setCompareL(Math.min(compareL, value - 1)); }} className="ml-2 rounded-lg border border-border bg-secondary px-3 py-2 text-foreground">{range(1, 7).map((value) => <option key={value}>{value}</option>)}</select></label><label className="font-mono text-xs text-muted-foreground">subshell<select value={compareL} onChange={(event) => setCompareL(Number(event.target.value))} className="ml-2 rounded-lg border border-border bg-secondary px-3 py-2 text-foreground">{range(0, compareN - 1).map((value) => <option key={value} value={value}>{ORBITAL_LETTERS[value]}</option>)}</select></label></div></div>
           <div className="mt-6 h-96 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={compareData} margin={{ top: 15, right: 15, left: -15, bottom: 10 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 5" /><XAxis dataKey="r" type="number" stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} /><Legend /><Line type="monotone" dataKey="first" name={name} stroke="var(--primary)" strokeWidth={3} dot={false} /><Line type="monotone" dataKey="second" name={compareName} stroke="var(--accent)" strokeWidth={3} strokeDasharray="7 5" dot={false} /></LineChart></ResponsiveContainer></div>
         </section>
-
-        <section className="mt-8 grid gap-4 sm:grid-cols-3">{[["total nodes", n - 1, "from n − 1"], ["angular nodes", l, "from ℓ"], ["radial nodes", n - l - 1, "from n − ℓ − 1"]].map(([label, value, note]) => <div key={label} className="rounded-2xl border border-border bg-card p-5"><p className="font-mono text-xs text-muted-foreground">{label}</p><strong className="mt-3 block text-4xl text-accent">{value}</strong><span className="font-mono text-xs text-muted-foreground">{note}</span></div>)}</section>
 
         <footer className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-border py-8 text-sm text-muted-foreground"><span className="flex items-center gap-2"><Orbit size={18} className="text-primary" /> Calculated from the hydrogenic radial wavefunction.</span><Button variant="quiet" onClick={() => { setN(3); setL(1); setM(0); setCompareN(4); setCompareL(1); }}><RotateCcw size={15} className="mr-2" />Reset</Button></footer>
       </div>

@@ -3,6 +3,7 @@ export const ORBITAL_LETTERS = ["s", "p", "d", "f", "g", "h", "i"] as const;
 export type OrbitalPoint = {
   r: number;
   rdf: number;
+  radial: number;
 };
 
 export function factorial(value: number) {
@@ -42,7 +43,7 @@ export function radialDistribution(n: number, l: number, samples = 420, sharedMa
     const rho = (2 * r) / n;
     const laguerre = generalizedLaguerre(n - l - 1, 2 * l + 1, rho);
     const radial = norm * rho ** l * Math.exp(-rho / 2) * laguerre;
-    return { r, rdf: r ** 2 * radial ** 2 };
+    return { r, rdf: r ** 2 * radial ** 2, radial };
   });
 }
 
