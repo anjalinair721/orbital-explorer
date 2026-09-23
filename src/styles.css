@@ -166,3 +166,58 @@
 @utility panel-shadow {
   box-shadow: var(--panel-shadow);
 }
+
+.orbital-sphere {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 36% 30%, color-mix(in oklab, var(--accent) 45%, transparent), color-mix(in oklab, var(--primary) 55%, transparent) 52%, transparent 70%);
+  box-shadow: 0 0 45px color-mix(in oklab, var(--primary) 26%, transparent);
+}
+.orbital-sphere span,
+.nucleus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--foreground);
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--card) 55%, transparent);
+}
+.orbital-dumbbell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: transform 500ms ease;
+}
+.orbital-dumbbell.rotate-90 { transform: rotate(90deg); }
+.orbital-dumbbell.rotate-45 { transform: rotate(45deg); }
+.orbital-dumbbell .lobe {
+  display: block;
+  width: 92px;
+  height: 126px;
+  border-radius: 75% 24% 75% 24%;
+  background: linear-gradient(145deg, color-mix(in oklab, var(--primary) 88%, var(--card)), color-mix(in oklab, var(--primary) 30%, transparent));
+  box-shadow: 0 15px 35px color-mix(in oklab, var(--primary) 24%, transparent);
+}
+.orbital-dumbbell .lobe-a { transform: rotate(45deg) translateX(8px); }
+.orbital-dumbbell .lobe-b { transform: rotate(225deg) translateX(8px); background: linear-gradient(145deg, color-mix(in oklab, var(--accent) 80%, var(--card)), color-mix(in oklab, var(--accent) 25%, transparent)); }
+.orbital-dumbbell .nucleus { z-index: 2; }
+.orbital-clover { position: relative; width: 220px; height: 220px; animation: orbital-float 8s ease-in-out infinite; }
+.orbital-clover span {
+  position: absolute;
+  left: calc(50% - 29px);
+  top: calc(50% - 50px);
+  width: 58px;
+  height: 100px;
+  transform-origin: 29px 98px;
+  border-radius: 70% 70% 28% 28%;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 75%, var(--card)), color-mix(in oklab, var(--primary) 44%, transparent));
+  opacity: 0.78;
+}
+.orbital-clover .nucleus { z-index: 3; }
+@keyframes orbital-float { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg) scale(1.025); } }
+@media (prefers-reduced-motion: reduce) { .orbital-clover { animation: none; } }
