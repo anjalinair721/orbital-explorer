@@ -158,13 +158,13 @@ function OrbitalExplorer() {
               </ClientOnly>
               <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm"><MousePointer2 size={13} /> drag to rotate · scroll to zoom</span>
             </div>
-            <p className="mt-5 font-mono text-xs text-muted-foreground">{shapeName(l)} cloud · orientation m = {m > 0 ? `+${m}` : m}</p>
+            <p className="mt-5 font-mono text-xs text-muted-foreground">{shapeName(l)} orbital surface · orientation m = {m > 0 ? `+${m}` : m}</p>
           </div>
 
           <div className="panel-shadow min-w-0 rounded-[1.75rem] border border-border bg-card p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Radial distribution · {name}</p><h2 className="mt-3 font-serif text-4xl sm:text-5xl">Probability by distance</h2></div><span className="rounded-xl bg-secondary px-3 py-2 font-mono text-xs">r̄ = {averageRadius(n, l).toFixed(1)} a₀</span></div>
+            <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Plotting single orbital · {name}</p><h2 className="mt-3 font-serif text-4xl sm:text-5xl">Radial Distribution Function for n = {n}</h2><p className="mt-2 font-mono text-xs text-muted-foreground">Angular nodes: {l} · Radial nodes: {n - l - 1} · Total nodes: {n - 1}</p></div><span className="rounded-xl bg-secondary px-3 py-2 font-mono text-xs">⟨r⟩ = {averageRadius(n, l).toFixed(1)} a₀</span></div>
             <div className="mt-7 h-80 w-full" aria-label={`Radial distribution chart for ${name}`}>
-              <ResponsiveContainer width="100%" height="100%"><LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 5" /><XAxis dataKey="r" type="number" tickFormatter={(v) => Number(v).toFixed(0)} stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} label={{ value: "distance r (a₀)", position: "insideBottomRight", offset: -2 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><Tooltip formatter={(value) => [Number(value).toPrecision(4), "RDF"]} labelFormatter={(value) => `r = ${Number(value).toFixed(2)} a₀`} contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} /><Line type="monotone" dataKey="rdf" name={`${name} orbital`} stroke="var(--primary)" strokeWidth={3} dot={false} activeDot={{ r: 4, fill: "var(--accent)" }} /></LineChart></ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%"><LineChart data={chartData} margin={{ top: 10, right: 18, left: 4, bottom: 22 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 4" /><XAxis dataKey="r" type="number" tickFormatter={(v) => Number(v).toFixed(0)} stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} label={{ value: "Distance from nucleus r (a₀)", position: "insideBottom", offset: -14 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} width={48} label={{ value: "RDF", angle: -90, position: "insideLeft" }} /><Tooltip formatter={(value) => [Number(value).toPrecision(4), "RDF"]} labelFormatter={(value) => `r = ${Number(value).toFixed(2)} a₀`} contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} /><Legend verticalAlign="top" align="right" /><Line type="monotone" dataKey="rdf" name={`${name} orbital`} stroke="var(--primary)" strokeWidth={3} dot={false} activeDot={{ r: 4, fill: "var(--accent)" }} /></LineChart></ResponsiveContainer>
             </div>
           </div>
         </section>
@@ -206,6 +206,30 @@ function OrbitalExplorer() {
         <section className="panel-shadow mt-8 rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Comparison lab</p><h2 className="mt-3 font-serif text-5xl">Compare two orbitals</h2></div><div className="flex gap-3"><label className="font-mono text-xs text-muted-foreground">shell<select value={compareN} onChange={(event) => { const value = Number(event.target.value); setCompareN(value); setCompareL(Math.min(compareL, value - 1)); }} className="ml-2 rounded-lg border border-border bg-secondary px-3 py-2 text-foreground">{range(1, 7).map((value) => <option key={value}>{value}</option>)}</select></label><label className="font-mono text-xs text-muted-foreground">subshell<select value={compareL} onChange={(event) => setCompareL(Number(event.target.value))} className="ml-2 rounded-lg border border-border bg-secondary px-3 py-2 text-foreground">{range(0, compareN - 1).map((value) => <option key={value} value={value}>{ORBITAL_LETTERS[value]}</option>)}</select></label></div></div>
           <div className="mt-6 h-96 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={compareData} margin={{ top: 15, right: 15, left: -15, bottom: 10 }}><CartesianGrid stroke="var(--border)" strokeDasharray="4 5" /><XAxis dataKey="r" type="number" stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} /><Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px" }} /><Legend /><Line type="monotone" dataKey="first" name={name} stroke="var(--primary)" strokeWidth={3} dot={false} /><Line type="monotone" dataKey="second" name={compareName} stroke="var(--accent)" strokeWidth={3} strokeDasharray="7 5" dot={false} /></LineChart></ResponsiveContainer></div>
+        </section>
+
+        <section className="panel-shadow mt-8 rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
+          <div className="border-b border-border pb-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Reference</p>
+            <h2 className="mt-3 font-serif text-5xl">Concepts used</h2>
+            <p className="mt-2 text-muted-foreground">The selected orbital and every plot are calculated from these hydrogenic relations.</p>
+          </div>
+          <ol className="mt-7 grid gap-x-10 gap-y-7 lg:grid-cols-2">
+            {[
+              ["Quantum expectation value (average distance)", "⟨r⟩ = ½[3n² − ℓ(ℓ + 1)]"],
+              ["Adaptive plot boundary", "rₘₐₓ = 2.5 × ⟨r⟩"],
+              ["Scaled distance variable", "ρ = 2r / n"],
+              ["Normalization constant", "Nₙ,ℓ = √[(2/n)³ · (n − ℓ − 1)! / (2n · (n + ℓ)!)]"],
+              ["Generalized radial wavefunction", "Rₙ,ℓ(r) = Nₙ,ℓ · ρˡ · e⁻ʳᐟⁿ · Lₙ₋ℓ₋₁²ˡ⁺¹(ρ)"],
+              ["Associated Laguerre polynomial", "degree k = n − ℓ − 1, order α = 2ℓ + 1"],
+              ["Radial distribution function", "RDF(r) = r² |Rₙ,ℓ(r)|²"],
+            ].map(([label, formula], index) => (
+              <li key={label} className="grid grid-cols-[2rem_1fr] gap-3 border-b border-border/70 pb-6">
+                <span className="font-mono text-xs text-primary">{String(index + 1).padStart(2, "0")}</span>
+                <div><h3 className="text-sm font-semibold">{label}</h3><p className="mt-3 overflow-x-auto pb-1 font-serif text-xl text-primary sm:text-2xl">{formula}</p></div>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <footer className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-border py-8 text-sm text-muted-foreground"><span className="flex items-center gap-2"><Orbit size={18} className="text-primary" /> Calculated from the hydrogenic radial wavefunction.</span><Button variant="quiet" onClick={() => { setN(3); setL(1); setM(0); setCompareN(4); setCompareL(1); }}><RotateCcw size={15} className="mr-2" />Reset</Button></footer>

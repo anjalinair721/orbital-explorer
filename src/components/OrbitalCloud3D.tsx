@@ -263,7 +263,7 @@ function OrbitalScene({ n, l, m, mode, colors, reduceMotion }: OrbitalCloud3DPro
       <directionalLight position={[3, 4, 5]} intensity={1.4} />
       <Axes colors={colors} />
       {!probability && <SolidOrbitalSurface n={n} l={l} m={m} colors={colors} />}
-      <ElectronCloud n={n} l={l} m={m} count={probability ? 4200 : 1400} colors={colors} autoRotate={probability && !reduceMotion} />
+      {probability && <ElectronCloud n={n} l={l} m={m} count={4200} colors={colors} autoRotate={!reduceMotion} />}
       <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.07} minDistance={3.25} maxDistance={7.5} rotateSpeed={0.7} zoomSpeed={0.65} autoRotate={false} />
     </>
   );
