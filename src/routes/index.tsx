@@ -156,7 +156,7 @@ function OrbitalExplorer() {
               <ClientOnly fallback={<div className="h-full animate-pulse bg-secondary" />}>
                 <Suspense fallback={<div className="h-full animate-pulse bg-secondary" />}><OrbitalCloud3D n={n} l={l} m={m} /></Suspense>
               </ClientOnly>
-              <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm"><MousePointer2 size={13} /> drag to rotate · scroll to zoom</span>
+              <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-card/90 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-sm"><MousePointer2 size={13} /> auto-rotating · drag to rotate · scroll to zoom</span>
             </div>
             <p className="mt-5 font-mono text-xs text-muted-foreground">{shapeName(l)} orbital surface · orientation m = {m > 0 ? `+${m}` : m}</p>
           </div>

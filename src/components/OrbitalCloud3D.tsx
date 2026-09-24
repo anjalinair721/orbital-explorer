@@ -154,7 +154,8 @@ function angularValue(direction: THREE.Vector3, l: number, m: number) {
   return { value, phase: value >= 0 ? 1 : -1 };
 }
 
-function SolidOrbitalSurface({ n, l, m, colors }: OrbitalCloud3DProps & { colors: SceneColors }) {
+function SolidOrbitalSurface({ n, l, m, colors, autoRotate }: OrbitalCloud3DProps & { colors: SceneColors; autoRotate: boolean }) {
+  const groupRef = useRef<THREE.Group>(null);
   const geometry = useMemo(() => {
     const thetaSteps = 56;
     const phiSteps = 112;
@@ -199,10 +200,22 @@ function SolidOrbitalSurface({ n, l, m, colors }: OrbitalCloud3DProps & { colors
     return result;
   }, [n, l, m, colors]);
 
+  useFrame((_, rawDelta) => {
+    if (!autoRotate || !groupRef.current) return;
+    const delta = Math.min(rawDelta, 0.05);
+    groupRef.current.rotation.y += delta * 0.28;
+  });
+
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial vertexColors transparent opacity={0.88} roughness={0.24} metalness={0.04} side={THREE.DoubleSide} />
-    </mesh>
+    <group ref={groupRef}>
+      <mesh geometry={geometry}>
+        <meshStandardMaterial vertexColors transparent opacity={0.88} roughness={0.24} metalness={0.04} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[0.075, 24, 24]} />
+        <meshStandardMaterial color={colors.nucleus} emissive={colors.cloud} emissiveIntensity={0.35} roughness={0.35} />
+      </mesh>
+    </group>
   );
 }
 
@@ -262,7 +275,7 @@ function OrbitalScene({ n, l, m, mode, colors, reduceMotion }: OrbitalCloud3DPro
       <ambientLight intensity={1.2} />
       <directionalLight position={[3, 4, 5]} intensity={1.4} />
       <Axes colors={colors} />
-      {!probability && <SolidOrbitalSurface n={n} l={l} m={m} colors={colors} />}
+      {!probability && <SolidOrbitalSurface n={n} l={l} m={m} colors={colors} autoRotate={!reduceMotion} />}
       {probability && <ElectronCloud n={n} l={l} m={m} count={4200} colors={colors} autoRotate={!reduceMotion} />}
       <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.07} minDistance={3.25} maxDistance={7.5} rotateSpeed={0.7} zoomSpeed={0.65} autoRotate={false} />
     </>
