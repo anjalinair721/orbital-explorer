@@ -204,7 +204,7 @@ function SolidOrbitalSurface({ n, l, m, colors, autoRotate }: OrbitalCloud3DProp
     if (!autoRotate || !groupRef.current) return;
     const delta = Math.min(rawDelta, 0.05);
     groupRef.current.rotation.y += delta * 0.28;
-ec  });
+  });
 
   return (
     <group ref={groupRef}>
